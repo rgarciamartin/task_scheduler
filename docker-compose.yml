@@ -1,0 +1,23 @@
+version: "3.11"
+services:
+  db:
+    image: postgres:14.0
+    volumes:
+      - pgdata_db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=tasks_scheduler_db
+      - POSTGRES_USER=tasks_scheduler_user
+      - POSTGRES_PASSWORD=tasks_scheduler_pass
+  web:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    command: /bin/sh -c "/scripts/entrypoint.sh"
+    volumes:
+      - ./app/:/app/
+    ports:
+      - "8082:8082"
+    depends_on:
+      - db
+volumes:
+  pgdata_db:
