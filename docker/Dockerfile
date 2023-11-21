@@ -6,11 +6,11 @@ ENV PYTHONDONTWRITEBYTECODE=1
 RUN apk add --no-cache postgresql-libs postgresql-dev
 RUN apk add --no-cache gcc musl-dev
 
-# Configurar directorio de trabajo
+# Configure working directory
 RUN mkdir /app  
 WORKDIR /app
 
-# Instalar paquetes del proyecto
+# Install project requirements
 COPY ./app/requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 

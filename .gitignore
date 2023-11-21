@@ -1,20 +1,16 @@
-# Ignorar archivos y carpetas generados por Django
+# Ignore Django's generated files
 *.log
 *.pot
 *.pyc
 __pycache__/
 db.sqlite3
 
-# Ignorar archivos generados por IDEs y editores de texto
+# Ignore IDE files
 .idea/
 .vscode/
 *.swp
 *.swo
 *.swn
 
-# Ignorar archivos de configuración local
+# Ignore local configuration files
 .env
-
-# Ignorar archivos de media subidos por los usuarios (si los almacenas localmente)
-media/
-staticfiles/
