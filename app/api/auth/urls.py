@@ -1,3 +1,7 @@
 from django.urls import path
 
-urlpatterns = []
+from .views import AuthTokenView
+
+urlpatterns = [
+    path("token/", AuthTokenView.as_view(), name="auth_token"),
+]
