@@ -1,4 +1,6 @@
 from django.conf.urls import include
 from django.urls import path
 
-urlpatterns = []
+urlpatterns = [
+    path("auth/", include("api.auth.urls")),
+]

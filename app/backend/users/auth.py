@@ -3,7 +3,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework.authtoken.models import Token
 
 
-def authenticate_user(username: str, password: str) -> str:
+def auth_token_for_user_credentials(username: str, password: str) -> str:
     assert username, "Username is required."
     assert password, "Password is required."
 
