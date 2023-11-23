@@ -36,3 +36,15 @@ def delete_task(task_uuid: str, owner_id: int) -> None:
 
     task = get_task_for_owner(task_uuid=task_uuid, owner_id=owner_id)
     task.delete()
+
+
+def update_task(task_uuid: int, owner_id: int, **kwargs) -> None:
+    assert task_uuid, "Task uuid is required."
+    assert owner_id, "Owner id is required."
+
+    fields_to_update = list(kwargs.keys())
+    task = get_task_for_owner(task_uuid=task_uuid, owner_id=owner_id)
+    task.validate_fields_are_editable(fields_to_update)
+    task.update_task_fields(**kwargs)
+    task.full_clean()
+    task.save(update_fields=fields_to_update)

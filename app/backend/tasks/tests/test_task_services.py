@@ -1,9 +1,9 @@
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError, FieldError
 from django.db.models import QuerySet
 from django.test import TestCase
 from django.utils import timezone
 
-from backend.tasks.services import create_task, list_tasks_for_user, delete_task
+from backend.tasks.services import create_task, list_tasks_for_user, delete_task, update_task
 from backend.users.tests.utils import UserTestUtils
 
 from .utils import TaskTestUtils
@@ -95,3 +95,62 @@ class DeleteTaskTestCase(BaseTaskTestCase):
         delete_task(task_uuid=task_to_delete.uuid, owner_id=task_to_delete.owner.id)
         new_tasks_for_owner = TaskTestUtils.get_tasks_count_for_user(owner_id=self.user.id)
         self.assertEqual(new_tasks_for_owner, 1)
+
+
+class UpdateTaskTestCase(BaseTaskTestCase):
+    @classmethod
+    def setUpTestData(cls) -> None:
+        super().setUpTestData()
+        cls.task = TaskTestUtils.create_task(title="My task", owner_id=cls.user.id)
+
+    def test_task_uuid_is_required(self):
+        with self.assertRaisesMessage(AssertionError, "Task uuid is required."):
+            update_task(task_uuid="", owner_id=self.user.id)
+
+    def test_owner_id_is_required(self):
+        with self.assertRaisesMessage(AssertionError, "Owner id is required."):
+            update_task(task_uuid=self.UUID, owner_id="")
+
+    def test_only_task_owner_can_update_task(self):
+        new_user = UserTestUtils.create_user(username="new_user", password="new")
+        no_owned_task = TaskTestUtils.create_task(title="No owned task", owner_id=new_user.id)
+        updated_data = {
+            "title": "Test update",
+            "description": "Test update description",
+            "status": "completed",
+        }
+        with self.assertRaisesMessage(PermissionError, "User is not task owner."):
+            update_task(task_uuid=no_owned_task.uuid, owner_id=self.user.id, **updated_data)
+
+    def test_non_editable_fields_raises_field_error(self):
+        updated_data = {
+            "title": "Test update",
+            "description": "Test update description",
+            "status": "completed",
+            "uuid": self.UUID,
+        }
+
+        with self.assertRaisesMessage(FieldError, "Some fields cannot be updated."):
+            update_task(task_uuid=self.task.uuid, owner_id=self.user.id, **updated_data)
+
+    def test_invalid_status_raises_exception(self):
+        updated_data = {
+            "title": "Test update",
+            "description": "Test update description",
+            "status": "finished",
+        }
+
+        with self.assertRaises(ValidationError):
+            update_task(task_uuid=self.task.uuid, owner_id=self.user.id, **updated_data)
+
+    def test_update_task(self):
+        updated_data = {
+            "title": "Test update",
+            "description": "Test update description",
+            "status": "completed",
+        }
+
+        update_task(task_uuid=self.task.uuid, owner_id=self.user.id, **updated_data)
+        self.assertIsNotNone(
+            TaskTestUtils.get_first_task_for_user(uuid=self.task.uuid, owner_id=self.user.id, **updated_data)
+        )
