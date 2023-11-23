@@ -59,3 +59,21 @@ class CreateTask(APIView):
                 {"error": e.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class DeleteTask(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, task_uuid):
+        try:
+            delete_task(task_uuid=str(task_uuid), owner_id=request.user.id)
+            return Response(
+                status=status.HTTP_204_NO_CONTENT,
+            )
+
+        except (ObjectDoesNotExist, PermissionError) as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
