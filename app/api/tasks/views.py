@@ -113,8 +113,14 @@ class DeleteTask(APIView):
                 status=status.HTTP_204_NO_CONTENT,
             )
 
-        except (ObjectDoesNotExist, PermissionError) as e:
+        except ObjectDoesNotExist as e:
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        except PermissionError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_403_FORBIDDEN,
             )

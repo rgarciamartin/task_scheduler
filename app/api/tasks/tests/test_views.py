@@ -249,7 +249,7 @@ class DeleteTaskTestCase(APITestCase):
     def test_not_task_owner_gets_400_error(self, _):
         self.client.force_authenticate(self.user)
         response = self.client.delete(self.endpoint_url)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertDictEqual(response.json(), {"error": "User is not task owner."})
 
     def test_integration_with_service(self):
