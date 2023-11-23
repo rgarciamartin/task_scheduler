@@ -29,3 +29,33 @@ class TasksList(APIView):
         paginator = PageNumberPagination()
         paginated_tasks_list = paginator.paginate_queryset(tasks_list, request)
         return paginator.get_paginated_response(self.TasksListSerializer(paginated_tasks_list, many=True).data)
+
+
+class CreateTask(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    class CreateTaskSerializer(serializers.Serializer):
+        title = serializers.CharField()
+        description = serializers.CharField(required=False)
+        status = serializers.CharField()
+
+    def _validate_post_data(self, post_data) -> dict:
+        task_data_serializer = self.CreateTaskSerializer(data=post_data)
+        task_data_serializer.is_valid(raise_exception=True)
+        return task_data_serializer.validated_data
+
+    def post(self, request):
+        try:
+            validated_data = self._validate_post_data(post_data=request.POST)
+            task = create_task(owner_id=request.user.id, **validated_data)
+            return Response(
+                {"task_uuid": str(task.uuid)},
+                status=status.HTTP_201_CREATED,
+            )
+
+        except serializers.ValidationError as e:
+            return Response(
+                {"error": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
